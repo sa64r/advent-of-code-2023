@@ -1,3 +1,4 @@
+import { keys, values } from 'lodash';
 import { parseLines, solve } from '../utils/typescript';
 
 function part1(input: string[]) {
@@ -19,7 +20,41 @@ function part1(input: string[]) {
 }
 
 function part2(_input: string[]) {
-  return 'part2';
+  let sum = 0;
+
+  const numbers = {
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+  };
+
+  for (const line of _input) {
+    // regex for keys and values of wordToNum
+    const regexStr = `(${keys(numbers).join('|')}|${values(numbers).join(
+      '|',
+    )})`;
+    const startRegex = new RegExp(regexStr);
+    const endRegex = new RegExp(`.*${regexStr}`);
+
+    const startMatch = line.match(startRegex);
+    const endMatch = line.match(endRegex);
+    console.log(startMatch, endMatch);
+
+    const startNumber = parseInt(numbers[startMatch[1]] ?? startMatch[1], 10);
+    const endNumber = parseInt(numbers[endMatch[1]] ?? endMatch[1], 10);
+
+    console.log(startNumber, endNumber);
+
+    sum = sum + startNumber * 10 + endNumber;
+  }
+
+  return sum;
 }
 
 solve({ part1, part2, parser: parseLines() });
