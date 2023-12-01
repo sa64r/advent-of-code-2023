@@ -35,7 +35,6 @@ function part2(_input: string[]) {
   };
 
   for (const line of _input) {
-    // regex for keys and values of wordToNum
     const regexStr = `(${keys(numbers).join('|')}|${values(numbers).join(
       '|',
     )})`;
