@@ -1,5 +1,5 @@
-export async function aocFetch(path: string) {
-  const res = await fetch(`https://adventofcode.com/2022/${path}`, {
+export async function aocFetch(path: string, year: number) {
+  const res = await fetch(`https://adventofcode.com/${year}/${path}`, {
     headers: {
       cookie: `session=${process.env.SESSION}`,
     },
