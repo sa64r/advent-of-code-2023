@@ -138,8 +138,75 @@ function part1(_input: string[]): number {
   return answer;
 }
 
+const getPartNumsAroundGear = (partNumbers: numberData[], gear: symbolData) => {
+  const partNumsAroundGear = partNumbers.filter((n) => {
+    const isPartNumAboveGear =
+      n.y === gear.y - 1 && n.x1 <= gear.x && n.x2 >= gear.x;
+    const isPartNumBelowGear =
+      n.y === gear.y + 1 && n.x1 <= gear.x && n.x2 >= gear.x;
+    const isPartNumLeftOfGear =
+      n.x2 === gear.x - 1 && n.y <= gear.y && n.y >= gear.y;
+    const isPartNumRightOfGear =
+      n.x1 === gear.x + 1 && n.y <= gear.y && n.y >= gear.y;
+
+    // check diagonals
+    const isPartNumAboveLeftOfGear = n.x2 === gear.x - 1 && n.y === gear.y - 1;
+    const isPartNumAboveRightOfGear = n.x1 === gear.x + 1 && n.y === gear.y - 1;
+    const isPartNumBelowLeftOfGear = n.x2 === gear.x - 1 && n.y === gear.y + 1;
+    const isPartNumBelowRightOfGear = n.x1 === gear.x + 1 && n.y === gear.y + 1;
+
+    return (
+      isPartNumAboveGear ||
+      isPartNumBelowGear ||
+      isPartNumLeftOfGear ||
+      isPartNumRightOfGear ||
+      isPartNumAboveLeftOfGear ||
+      isPartNumAboveRightOfGear ||
+      isPartNumBelowLeftOfGear ||
+      isPartNumBelowRightOfGear
+    );
+  });
+
+  return partNumsAroundGear;
+};
+
+const getPartNumsAroundGears = (
+  partNumbers: numberData[],
+  gears: symbolData[],
+) => {
+  const partNumsAroundGears = gears.map((g) => ({
+    partNums: getPartNumsAroundGear(partNumbers, g),
+    gear: g,
+  }));
+
+  return partNumsAroundGears;
+};
+
 function part2(_input: string[]) {
-  return 'part2';
+  const xMax = _input[0].length;
+  const yMax = _input.length;
+
+  const numbers = findNumbers(_input);
+  const symbols = findSymbols(_input);
+  const partNumbers = getPartNumbers(numbers, symbols, xMax, yMax);
+
+  const gears = symbols.filter((s) => s.symbol === '*');
+
+  const partNumsAroundGears = getPartNumsAroundGears(partNumbers, gears);
+
+  const actualGears = partNumsAroundGears.filter((p) => p.partNums.length >= 2);
+
+  const gearRatios = actualGears.map((g) => {
+    const { partNums } = g;
+
+    const gearRatio = partNums.reduce((acc, curr) => acc * curr.value, 1);
+
+    return gearRatio;
+  });
+
+  const answer = sum(gearRatios);
+
+  return answer;
 }
 
-solve({ part1, part2, parser: parseLines() });
+solve({ part1, part2, parser: parseLines(), test2: 467835 });
