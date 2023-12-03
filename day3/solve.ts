@@ -1,3 +1,4 @@
+import { sum } from 'lodash';
 import { parseLines, solve } from '../utils/typescript';
 
 type numberData = {
@@ -29,6 +30,7 @@ const findNumbers = (input: string[]): numberData[] => {
       if (isNumber(currChar)) {
         if (!numStack.length) {
           x1 = x;
+          x2 = x;
         } else {
           x2 = x;
         }
@@ -40,6 +42,12 @@ const findNumbers = (input: string[]): numberData[] => {
           numStack = [];
         }
       }
+    }
+
+    if (numStack.length) {
+      const value = parseInt(numStack.join(''));
+      numbers.push({ value, x1, y, x2 });
+      numStack = [];
     }
   }
 
@@ -125,13 +133,13 @@ function part1(_input: string[]): number {
   const partNumbers = getPartNumbers(numbers, symbols, xMax, yMax);
   const partNumbersValues = partNumbers.map((n) => n.value);
 
-  const sum = partNumbersValues.reduce((a, b) => a + b, 0);
+  const answer = sum(partNumbersValues);
 
-  return sum;
+  return answer;
 }
 
 function part2(_input: string[]) {
   return 'part2';
 }
 
-solve({ part1, part2, parser: parseLines(), test1: 4361 });
+solve({ part1, part2, parser: parseLines() });
