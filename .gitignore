@@ -104,6 +104,8 @@ dist
 .tern-port
 
 input.txt
+test1.txt
+test2.txt
 solutions.json
 !_template/solutions.json
 
