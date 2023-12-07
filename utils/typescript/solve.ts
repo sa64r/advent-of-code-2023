@@ -50,8 +50,8 @@ export async function solve<
   const part = part1Solved ? 2 : 1;
 
   const [solver, test, testFile] = part1Solved
-    ? [part2, test2, 'test2.txt']
-    : [part1, test1, 'test1.txt'];
+    ? [part2, test2, 'test.txt']
+    : [part1, test1, 'test.txt'];
 
   if (test) {
     const testInput = parser(read(`${dir}/${testFile}`));
