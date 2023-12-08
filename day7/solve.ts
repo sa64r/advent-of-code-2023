@@ -9,7 +9,7 @@ const cardToNumber = (card: string) => {
     case 'Q':
       return 12;
     case 'J':
-      return 11;
+      return 1;
     case 'T':
       return 10;
     default:
@@ -37,39 +37,90 @@ const parseInput = (input: string[]): Hand[] => {
 };
 
 const isFiveOfAKind = (counts: CardCounts) => {
+  const numberOfJs = counts['J'] || 0;
+
   const isFiveOfAKind =
-    Object.values(counts).filter((count) => count === 5).length === 1;
+    (numberOfJs === 0 &&
+      Object.values(counts).filter((count) => count === 5).length === 1) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 4).length >= 1) ||
+    (numberOfJs === 2 &&
+      Object.values(counts).filter((count) => count === 3).length >= 1) ||
+    (numberOfJs === 3 &&
+      Object.values(counts).filter((count) => count === 2).length >= 1) ||
+    (numberOfJs === 4 &&
+      Object.values(counts).filter((count) => count === 1).length >= 1);
+
   return isFiveOfAKind;
 };
 
 const isFourOfAKind = (counts: CardCounts) => {
+  const numberOfJs = counts['J'] || 0;
+
   const isFourOfAKind =
-    Object.values(counts).filter((count) => count === 4).length === 1;
+    (numberOfJs === 0 &&
+      Object.values(counts).filter((count) => count === 4).length === 1) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 3).length >= 1) ||
+    (numberOfJs === 2 &&
+      Object.values(counts).filter((count) => count === 2).length >= 1) ||
+    (numberOfJs === 3 &&
+      Object.values(counts).filter((count) => count === 1).length >= 1);
   return isFourOfAKind;
 };
 
 const isFullHouse = (counts: CardCounts) => {
+  const numberOfJs = counts['J'] || 0;
+
   const isFullHouse =
-    Object.values(counts).filter((count) => count === 2).length === 1 &&
-    Object.values(counts).filter((count) => count === 3).length === 1;
+    (numberOfJs === 0 &&
+      Object.values(counts).filter((count) => count === 3).length === 1 &&
+      Object.values(counts).filter((count) => count === 2).length === 1) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 3).length >= 1 &&
+      Object.values(counts).filter((count) => count === 1).length >= 1) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 2).length >= 2) ||
+    (numberOfJs === 2 &&
+      Object.values(counts).filter((count) => count === 1).length >= 1 &&
+      Object.values(counts).filter((count) => count === 2).length >= 1);
+
   return isFullHouse;
 };
 
 const isThreeOfAKind = (counts: CardCounts) => {
+  const numberOfJs = counts['J'] || 0;
+
   const isThreeOfAKind =
-    Object.values(counts).filter((count) => count === 3).length === 1;
+    (numberOfJs === 0 &&
+      Object.values(counts).filter((count) => count === 3).length === 1) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 2).length >= 1) ||
+    (numberOfJs === 2 &&
+      Object.values(counts).filter((count) => count === 1).length >= 1);
+
   return isThreeOfAKind;
 };
 
 const isTwoPair = (counts: CardCounts) => {
+  const numberOfJs = counts['J'] || 0;
+
   const isTwoPair =
-    Object.values(counts).filter((count) => count === 2).length === 2;
+    (numberOfJs === 0 &&
+      Object.values(counts).filter((count) => count === 2).length === 2) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 2).length === 1);
   return isTwoPair;
 };
 
 const isPair = (counts: CardCounts) => {
+  const numberOfJs = counts['J'] || 0;
+
   const isPair =
-    Object.values(counts).filter((count) => count === 2).length === 1;
+    (numberOfJs === 0 &&
+      Object.values(counts).filter((count) => count === 2).length === 1) ||
+    (numberOfJs === 1 &&
+      Object.values(counts).filter((count) => count === 1).length >= 1);
   return isPair;
 };
 
@@ -84,6 +135,7 @@ const cardCounts = (hand: Hand): CardCounts => {
       cardCounts[card] = 1;
     }
   });
+
   return cardCounts;
 };
 
@@ -180,8 +232,6 @@ function part1(_input: string[]) {
 
   const rankedHands = rankHands(handsByType);
 
-  console.dir(handsByType, { depth: null });
-
   const sumOfRankTimesBid = rankedHands.reduce(
     (acc, curr) => acc + curr.rank * curr.bid,
     0,
@@ -191,7 +241,18 @@ function part1(_input: string[]) {
 }
 
 function part2(_input: string[]) {
-  return 'part2';
+  const hands = parseInput(_input);
+
+  const handsByType = formatHandsByType(hands);
+
+  const rankedHands = rankHands(handsByType);
+
+  const sumOfRankTimesBid = rankedHands.reduce(
+    (acc, curr) => acc + curr.rank * curr.bid,
+    0,
+  );
+
+  return sumOfRankTimesBid;
 }
 
-solve({ part1, part2, parser: parseLines(), test1: 6440 });
+solve({ part1, part2, parser: parseLines(), test2: 5905 });
