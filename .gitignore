@@ -106,6 +106,7 @@ dist
 input.txt
 test1.txt
 test2.txt
+test.txt
 solutions.json
 !_template/solutions.json
 
