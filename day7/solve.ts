@@ -36,20 +36,35 @@ const parseInput = (input: string[]): Hand[] => {
   return hands;
 };
 
+const getCountsWithNoJs = (counts: CardCounts) => {
+  const countsWithNoJs = Object.entries(counts).reduce((acc, [card, count]) => {
+    if (card !== 'J') {
+      acc[card] = count;
+    }
+    return acc;
+  }, {});
+
+  return countsWithNoJs;
+};
+
 const isFiveOfAKind = (counts: CardCounts) => {
   const numberOfJs = counts['J'] || 0;
 
+  const countsWithNoJs = getCountsWithNoJs(counts);
+
   const isFiveOfAKind =
-    (numberOfJs === 0 &&
-      Object.values(counts).filter((count) => count === 5).length === 1) ||
+    Object.values(counts).filter((count) => count === 5).length === 1 ||
     (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 4).length >= 1) ||
+      Object.values(countsWithNoJs).filter((count) => count === 4).length >=
+        1) ||
     (numberOfJs === 2 &&
-      Object.values(counts).filter((count) => count === 3).length >= 1) ||
+      Object.values(countsWithNoJs).filter((count) => count === 3).length >=
+        1) ||
     (numberOfJs === 3 &&
-      Object.values(counts).filter((count) => count === 2).length >= 1) ||
+      Object.values(countsWithNoJs).filter((count) => count === 2).length >=
+        1) ||
     (numberOfJs === 4 &&
-      Object.values(counts).filter((count) => count === 1).length >= 1);
+      Object.values(countsWithNoJs).filter((count) => count === 1).length >= 1);
 
   return isFiveOfAKind;
 };
@@ -57,33 +72,36 @@ const isFiveOfAKind = (counts: CardCounts) => {
 const isFourOfAKind = (counts: CardCounts) => {
   const numberOfJs = counts['J'] || 0;
 
+  const countsWithNoJs = getCountsWithNoJs(counts);
+
   const isFourOfAKind =
-    (numberOfJs === 0 &&
-      Object.values(counts).filter((count) => count === 4).length === 1) ||
+    Object.values(counts).filter((count) => count === 4).length === 1 ||
     (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 3).length >= 1) ||
+      Object.values(countsWithNoJs).filter((count) => count === 3).length >=
+        1) ||
     (numberOfJs === 2 &&
-      Object.values(counts).filter((count) => count === 2).length >= 1) ||
+      Object.values(countsWithNoJs).filter((count) => count === 2).length >=
+        1) ||
     (numberOfJs === 3 &&
-      Object.values(counts).filter((count) => count === 1).length >= 1);
+      Object.values(countsWithNoJs).filter((count) => count === 1).length >= 1);
   return isFourOfAKind;
 };
 
 const isFullHouse = (counts: CardCounts) => {
   const numberOfJs = counts['J'] || 0;
 
+  const countsWithNoJs = getCountsWithNoJs(counts);
+
   const isFullHouse =
-    (numberOfJs === 0 &&
-      Object.values(counts).filter((count) => count === 3).length === 1 &&
+    (Object.values(counts).filter((count) => count === 3).length === 1 &&
       Object.values(counts).filter((count) => count === 2).length === 1) ||
     (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 3).length >= 1 &&
-      Object.values(counts).filter((count) => count === 1).length >= 1) ||
-    (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 2).length >= 2) ||
+      Object.values(countsWithNoJs).filter((count) => count === 2).length >=
+        2) ||
     (numberOfJs === 2 &&
-      Object.values(counts).filter((count) => count === 1).length >= 1 &&
-      Object.values(counts).filter((count) => count === 2).length >= 1);
+      Object.values(countsWithNoJs).filter((count) => count === 2).length >=
+        1 &&
+      Object.values(countsWithNoJs).filter((count) => count === 1).length >= 1);
 
   return isFullHouse;
 };
@@ -91,13 +109,15 @@ const isFullHouse = (counts: CardCounts) => {
 const isThreeOfAKind = (counts: CardCounts) => {
   const numberOfJs = counts['J'] || 0;
 
+  const countsWithNoJs = getCountsWithNoJs(counts);
+
   const isThreeOfAKind =
-    (numberOfJs === 0 &&
-      Object.values(counts).filter((count) => count === 3).length === 1) ||
+    Object.values(counts).filter((count) => count === 3).length === 1 ||
     (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 2).length >= 1) ||
+      Object.values(countsWithNoJs).filter((count) => count === 2).length >=
+        1) ||
     (numberOfJs === 2 &&
-      Object.values(counts).filter((count) => count === 1).length >= 1);
+      Object.values(countsWithNoJs).filter((count) => count === 1).length >= 1);
 
   return isThreeOfAKind;
 };
@@ -105,11 +125,15 @@ const isThreeOfAKind = (counts: CardCounts) => {
 const isTwoPair = (counts: CardCounts) => {
   const numberOfJs = counts['J'] || 0;
 
+  const countsWithNoJs = getCountsWithNoJs(counts);
+
   const isTwoPair =
-    (numberOfJs === 0 &&
-      Object.values(counts).filter((count) => count === 2).length === 2) ||
+    Object.values(counts).filter((count) => count === 2).length === 2 ||
     (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 2).length === 1);
+      Object.values(countsWithNoJs).filter((count) => count === 2).length ===
+        1) ||
+    (numberOfJs === 2 &&
+      Object.values(countsWithNoJs).filter((count) => count === 1).length >= 2);
   return isTwoPair;
 };
 
@@ -117,10 +141,8 @@ const isPair = (counts: CardCounts) => {
   const numberOfJs = counts['J'] || 0;
 
   const isPair =
-    (numberOfJs === 0 &&
-      Object.values(counts).filter((count) => count === 2).length === 1) ||
-    (numberOfJs === 1 &&
-      Object.values(counts).filter((count) => count === 1).length >= 1);
+    Object.values(counts).filter((count) => count === 2).length === 1 ||
+    numberOfJs === 1;
   return isPair;
 };
 
