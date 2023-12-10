@@ -12,266 +12,257 @@ L - bend north to east
 S - start
 */
 
-type QueueItem = {
-  x: number;
-  y: number;
-  char: string;
-  prevX: number;
-  prevY: number;
-  steps: number;
-};
+// find loop
+// find mid point of the loop from the start
 
-const findStart = (input: string[]) => {
-  for (let y = 0; y < input.length; y++) {
-    for (let x = 0; x < input[y].length; x++) {
-      if (input[y][x] === 'S') {
-        return { x, y };
-      }
+const findStartCoordinates = (input: string[]) => {
+  for (const line of input) {
+    const index = line.indexOf('S');
+    if (index !== -1) {
+      return [index, input.indexOf(line)];
     }
   }
   throw new Error('No start found');
 };
 
-const findValidDirectionsOnStart = (
-  startCoordinates: { x; y },
-  map: string[][],
-) => {
-  const { x, y } = startCoordinates;
-
-  const north = map[y - 1][x];
-  const south = map[y + 1][x];
-  const east = map[y][x + 1];
-  const west = map[y][x - 1];
-
-  const validDirections: QueueItem[] = [];
-
-  if (north === '|' || north === 'F' || north === '7') {
-    validDirections.push({
-      x,
-      y: y - 1,
-      char: north,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
-  }
-  if (south === '|' || south === 'L' || south === 'J') {
-    validDirections.push({
-      x,
-      y: y + 1,
-      char: south,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
-  }
-  if (east === '-' || east === '7' || east === 'J') {
-    validDirections.push({
-      x: x + 1,
-      y,
-      char: east,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
-  }
-  if (west === '-' || west === 'F' || west === 'L') {
-    validDirections.push({
-      x: x - 1,
-      y,
-      char: west,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
-  }
-
-  return validDirections;
+type HandlePipeInputs = {
+  lastCoordinates: {
+    x: number;
+    y: number;
+  };
+  currentCoordinates: {
+    x: number;
+    y: number;
+  };
 };
 
-const findLengthOfLoop = (input: string[]) => {
-  const map = input.map((line) => line.split(''));
-
-  const start = findStart(input);
-
-  const queue: QueueItem[] = [
-    { ...start, char: 'S', prevX: -1, prevY: -1, steps: 0 },
-  ];
-
-  // hashed set of visited nodes
-  const visited = new Set<string>();
-
-  while (queue.length) {
-    const { x, y, char, prevX, prevY, steps } = queue.shift()!;
-
-    // check if we have visited this node before
-    const hash = `${x},${y}`;
-    if (visited.has(hash)) {
-      return steps;
-    } else {
-      visited.add(hash);
-    }
-
-    switch (char) {
-      case '|':
-        if (prevY === y - 1) {
-          // push new queue item that is going south
-          queue.push({
-            x,
-            y: y + 1,
-            char: map[y + 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        } else if (prevY === y + 1) {
-          // push new queue item that is going north
-          queue.push({
-            x,
-            y: y - 1,
-            char: map[y - 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        break;
-      case '-':
-        if (prevX === x - 1) {
-          // push new queue item that is going east
-          queue.push({
-            x: x + 1,
-            y,
-            char: map[y][x + 1],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        } else if (prevX === x + 1) {
-          // push new queue item that is going west
-          queue.push({
-            x: x - 1,
-            y,
-            char: map[y][x - 1],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        break;
-      case 'F':
-        if (prevY === y + 1) {
-          // push new queue item that is going east
-          queue.push({
-            x: x + 1,
-            y,
-            char: map[y][x + 1],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        } else if (prevX === x + 1) {
-          // push new queue item that is going south
-          queue.push({
-            x,
-            y: y + 1,
-            char: map[y + 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        break;
-      case '7':
-        if (prevY === y + 1) {
-          // push new queue item that is going west
-          queue.push({
-            x: x - 1,
-            y,
-            char: map[y][x - 1],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        } else if (prevX === x - 1) {
-          // push new queue item that is going south
-          queue.push({
-            x,
-            y: y + 1,
-            char: map[y + 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        break;
-      case 'J':
-        if (prevY === y - 1) {
-          // push new queue item that is going west
-          queue.push({
-            x: x - 1,
-            y,
-            char: map[y][x - 1],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        if (prevX === x - 1) {
-          // push new queue item that is going north
-          queue.push({
-            x,
-            y: y - 1,
-            char: map[y - 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        break;
-      case 'L':
-        if (prevY === y - 1) {
-          // push new queue item that is going east
-          queue.push({
-            x: x + 1,
-            y,
-            char: map[y][x + 1],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        if (prevX === x + 1) {
-          // push new queue item that is going north
-          queue.push({
-            x,
-            y: y - 1,
-            char: map[y - 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
-        }
-        break;
-      case 'S':
-        queue.push(
-          ...findValidDirectionsOnStart(
-            {
-              x,
-              y,
-            },
-            map,
-          ),
-        );
-    }
+const handleVerticalPipe = ({
+  lastCoordinates,
+  currentCoordinates,
+}: HandlePipeInputs) => {
+  // if above move down
+  if (lastCoordinates.y < currentCoordinates.y) {
+    currentCoordinates.y++;
+  }
+  // if below move up
+  if (lastCoordinates.y > currentCoordinates.y) {
+    currentCoordinates.y--;
   }
 
-  return 0;
+  return currentCoordinates;
+};
+
+const handleHorizontalPipe = ({
+  lastCoordinates,
+  currentCoordinates,
+}: HandlePipeInputs) => {
+  // if left move right
+  if (lastCoordinates.x < currentCoordinates.x) {
+    currentCoordinates.x++;
+  }
+  // if right move left
+  if (lastCoordinates.x > currentCoordinates.x) {
+    currentCoordinates.x--;
+  }
+
+  return currentCoordinates;
+};
+
+const handleFBend = ({
+  lastCoordinates,
+  currentCoordinates,
+}: HandlePipeInputs) => {
+  // if below move right
+  if (lastCoordinates.y < currentCoordinates.y) {
+    currentCoordinates.x++;
+  }
+  // if left move down
+  if (lastCoordinates.x < currentCoordinates.x) {
+    currentCoordinates.y++;
+  }
+
+  return currentCoordinates;
+};
+
+const handle7Bend = ({
+  lastCoordinates,
+  currentCoordinates,
+}: HandlePipeInputs) => {
+  // if below move left
+  if (lastCoordinates.y < currentCoordinates.y) {
+    currentCoordinates.x--;
+  }
+  // if right move down
+  if (lastCoordinates.x > currentCoordinates.x) {
+    currentCoordinates.y++;
+  }
+
+  return currentCoordinates;
+};
+
+const handleJBend = ({
+  lastCoordinates,
+  currentCoordinates,
+}: HandlePipeInputs) => {
+  // if above move left
+  if (lastCoordinates.y > currentCoordinates.y) {
+    currentCoordinates.x--;
+  }
+  // if right move up
+  if (lastCoordinates.x > currentCoordinates.x) {
+    currentCoordinates.y--;
+  }
+
+  return currentCoordinates;
+};
+
+const handleLBend = ({
+  lastCoordinates,
+  currentCoordinates,
+}: HandlePipeInputs) => {
+  // if above move right
+  if (lastCoordinates.y > currentCoordinates.y) {
+    currentCoordinates.x++;
+  }
+  // if left move up
+  if (lastCoordinates.x < currentCoordinates.x) {
+    currentCoordinates.y--;
+  }
+
+  return currentCoordinates;
+};
+
+const handleOnStart = ({ currentCoordinates, map }) => {
+  // find direction you can legally move
+
+  const above = map[currentCoordinates.y - 1][currentCoordinates.x];
+  const below = map[currentCoordinates.y + 1][currentCoordinates.x];
+  const left = map[currentCoordinates.y][currentCoordinates.x - 1];
+  const right = map[currentCoordinates.y][currentCoordinates.x + 1];
+
+  console.log(above, below, left, right);
+
+  if (above === '|' || above === 'F' || above === '7') {
+    return {
+      currentCoordinates: {
+        x: currentCoordinates.x,
+        y: currentCoordinates.y - 1,
+      },
+    };
+  } else if (below === '|' || below === 'J' || below === 'L') {
+    return {
+      currentCoordinates: {
+        x: currentCoordinates.x,
+        y: currentCoordinates.y + 1,
+      },
+    };
+  } else if (left === '-' || left === '7' || left === 'J') {
+    return {
+      currentCoordinates: {
+        x: currentCoordinates.x - 1,
+        y: currentCoordinates.y,
+      },
+    };
+  } else if (right === '-' || right === 'L' || right === 'F') {
+    return {
+      currentCoordinates: {
+        x: currentCoordinates.x + 1,
+        y: currentCoordinates.y,
+      },
+    };
+  }
+
+  throw new Error('No direction found');
+};
+
+const findDistanceOfLoop = (map: string[]) => {
+  const start = findStartCoordinates(map);
+
+  let currentCoordinates = {
+    x: start[0],
+    y: start[1],
+  };
+  let steps = 0;
+
+  let lastCoordinates = {
+    x: start[0],
+    y: start[1],
+  };
+
+  while (
+    steps === 0
+      ? currentCoordinates.x === start[0] && currentCoordinates.y === start[1]
+      : currentCoordinates.x !== start[0] && currentCoordinates.y !== start[1]
+  ) {
+    const currChar = map[currentCoordinates.y][currentCoordinates.x];
+    const lastCoordinatesTemp = currentCoordinates;
+
+    console.log({
+      currentCoordinates,
+      lastCoordinates,
+      currChar,
+    });
+
+    switch (currChar) {
+      case '|':
+        currentCoordinates = handleVerticalPipe({
+          lastCoordinates,
+          currentCoordinates,
+        });
+        break;
+      case '-':
+        currentCoordinates = handleHorizontalPipe({
+          lastCoordinates,
+          currentCoordinates,
+        });
+        break;
+      case 'F':
+        currentCoordinates = handleFBend({
+          lastCoordinates,
+          currentCoordinates,
+        });
+        break;
+      case '7':
+        currentCoordinates = handle7Bend({
+          lastCoordinates,
+          currentCoordinates,
+        });
+        break;
+      case 'J':
+        currentCoordinates = handleJBend({
+          lastCoordinates,
+          currentCoordinates,
+        });
+        break;
+      case 'L':
+        currentCoordinates = handleLBend({
+          lastCoordinates,
+          currentCoordinates,
+        });
+        break;
+      case 'S':
+        const { currentCoordinates: newCurrentCoordinates } = handleOnStart({
+          currentCoordinates,
+          map,
+        });
+        currentCoordinates = newCurrentCoordinates;
+    }
+
+    console.log({
+      currentCoordinates,
+    });
+
+    lastCoordinates = lastCoordinatesTemp;
+    steps++;
+  }
+
+  return steps;
 };
 
 function part1(_input: string[]) {
-  const steps = findLengthOfLoop(_input);
-  return steps;
+  console.log(findDistanceOfLoop(_input));
+
+  return 0;
 }
 
 function part2(_input: string[]) {
