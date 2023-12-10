@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs';
 import { parseLines, solve } from '../utils/typescript';
 
 /* 
@@ -38,55 +39,119 @@ const findValidDirectionsOnStart = (
 ) => {
   const { x, y } = startCoordinates;
 
-  const north = map[y - 1][x];
-  const south = map[y + 1][x];
-  const east = map[y][x + 1];
-  const west = map[y][x - 1];
+  const north = y - 1 >= 0 ? map[y - 1][x] : undefined;
+  const south = x + 1 < map[0].length ? map[y + 1][x] : undefined;
+  const east = x + 1 < map[0].length ? map[y][x + 1] : undefined;
+  const west = x - 1 >= 0 ? map[y][x - 1] : undefined;
+
+  const northNorth = y - 2 >= 0 ? map[y - 2][x] : undefined;
+  const southSouth = x + 2 < map[0].length ? map[y + 2][x] : undefined;
+  const eastEast = x + 2 < map[0].length ? map[y][x + 2] : undefined;
+  const westWest = x - 2 >= 0 ? map[y][x - 2] : undefined;
 
   const validDirections: QueueItem[] = [];
 
-  if (north === '|' || north === 'F' || north === '7') {
-    validDirections.push({
-      x,
-      y: y - 1,
-      char: north,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
+  // used for part 1
+  // if (north === '|' || north === 'F' || north === '7') {
+  //   validDirections.push({
+  //     x,
+  //     y: y - 1,
+  //     char: north,
+  //     prevX: x,
+  //     prevY: y,
+  //     steps: 1,
+  //   });
+  // }
+  // if (south === '|' || south === 'L' || south === 'J') {
+  //   validDirections.push({
+  //     x,
+  //     y: y + 1,
+  //     char: south,
+  //     prevX: x,
+  //     prevY: y,
+  //     steps: 1,
+  //   });
+  // }
+  // if (east === '-' || east === '7' || east === 'J') {
+  //   validDirections.push({
+  //     x: x + 1,
+  //     y,
+  //     char: east,
+  //     prevX: x,
+  //     prevY: y,
+  //     steps: 1,
+  //   });
+  // }
+  // if (west === '-' || west === 'F' || west === 'L') {
+  //   validDirections.push({
+  //     x: x - 1,
+  //     y,
+  //     char: west,
+  //     prevX: x,
+  //     prevY: y,
+  //     steps: 1,
+  //   });
+  // }
+
+  if (north === '|') {
+    if (northNorth === 'F' || northNorth === '7' || northNorth === '|') {
+      validDirections.push({
+        x,
+        y: y - 1,
+        char: north,
+        prevX: x,
+        prevY: y,
+        steps: 1,
+      });
+    }
   }
-  if (south === '|' || south === 'L' || south === 'J') {
-    validDirections.push({
-      x,
-      y: y + 1,
-      char: south,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
+
+  if (south === '|') {
+    if (southSouth === 'L' || southSouth === '|' || southSouth === 'J') {
+      validDirections.push({
+        x,
+        y: y + 1,
+        char: south,
+        prevX: x,
+        prevY: y,
+        steps: 1,
+      });
+    }
   }
-  if (east === '-' || east === '7' || east === 'J') {
-    validDirections.push({
-      x: x + 1,
-      y,
-      char: east,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
+
+  if (east === '-') {
+    if (eastEast === '7' || eastEast === 'J' || eastEast === '-') {
+      validDirections.push({
+        x: x + 1,
+        y,
+        char: east,
+        prevX: x,
+        prevY: y,
+        steps: 1,
+      });
+    }
   }
-  if (west === '-' || west === 'F' || west === 'L') {
-    validDirections.push({
-      x: x - 1,
-      y,
-      char: west,
-      prevX: x,
-      prevY: y,
-      steps: 1,
-    });
+
+  if (west === '-') {
+    if (westWest === 'F' || westWest === 'L' || westWest === '-') {
+      validDirections.push({
+        x: x - 1,
+        y,
+        char: west,
+        prevX: x,
+        prevY: y,
+        steps: 1,
+      });
+    }
   }
 
   return validDirections;
+};
+
+const isCoordinateValid = (x: number, y: number, map: string[][]) => {
+  return (
+    x >= 0 && x < map[0].length && y >= 0 && y < map.length && map[y][x] !== ' '
+  );
 };
 
 const findLengthOfLoop = (input: string[]) => {
@@ -107,7 +172,11 @@ const findLengthOfLoop = (input: string[]) => {
     // check if we have visited this node before
     const hash = `${x},${y}`;
     if (visited.has(hash)) {
-      return steps;
+      return {
+        steps,
+        visited,
+        map,
+      };
     } else {
       visited.add(hash);
     }
@@ -126,14 +195,16 @@ const findLengthOfLoop = (input: string[]) => {
           });
         } else if (prevY === y + 1) {
           // push new queue item that is going north
-          queue.push({
-            x,
-            y: y - 1,
-            char: map[y - 1][x],
-            prevX: x,
-            prevY: y,
-            steps: steps + 1,
-          });
+          if (isCoordinateValid(x, y - 1, map)) {
+            queue.push({
+              x,
+              y: y - 1,
+              char: map[y - 1][x],
+              prevX: x,
+              prevY: y,
+              steps: steps + 1,
+            });
+          }
         }
         break;
       case '-':
@@ -263,19 +334,112 @@ const findLengthOfLoop = (input: string[]) => {
             map,
           ),
         );
+        break;
+      case '.':
+        continue;
     }
   }
 
-  return 0;
+  return {
+    steps: -1,
+    visited: new Set<string>(),
+    map,
+  };
 };
 
 function part1(_input: string[]) {
-  const steps = findLengthOfLoop(_input);
+  const { steps } = findLengthOfLoop(_input);
   return steps;
 }
 
+const increaseResolutionOfMap = (map: string[][]) => {
+  const newMap = map.map((row, y) =>
+    row.map((char, x) => {
+      switch (char) {
+        case 'L':
+          return '.|.\n.L-\n...';
+        case 'J':
+          return '.|.\n-J.\n...';
+        case 'F':
+          return '...\n.F-\n.|.';
+        case '7':
+          return '...\n-7.\n.|.';
+        case 'S':
+          return '.|.\n-S-\n.|.';
+        case '-':
+          return '...\n---\n...';
+        case '|':
+          return '.|.\n.|.\n.|.';
+        default:
+          return '...\n...\n...';
+      }
+    }),
+  );
+
+  // make new map with increased resolution
+  const increasedResolutionMap = newMap.map((row) => {
+    const newRow = row.map((char) => char.split('\n'));
+    const newRows = newRow.reduce((acc, val) => {
+      return acc.map((row, i) => row.concat(val[i]));
+    });
+    return newRows;
+  });
+
+  return increasedResolutionMap.flat();
+};
+
+const simplifyMap = (map: string[][], loopNodes: string[]) => {
+  const newMap = map.map((row, y) =>
+    row.map((_, x) => (loopNodes.includes(`${x},${y}`) ? map[y][x] : '.')),
+  );
+
+  return newMap;
+};
+
+const floodFill = (grid: string[][]) => {
+  const gridCopy: string[][] = grid.map((row) => [...row]);
+  const pointsToExplore: { x: number; y: number }[] = [{ x: 0, y: 0 }];
+  while (pointsToExplore.length) {
+    const point = pointsToExplore.shift();
+    if (point) {
+      const { x, y } = point;
+      if (x < 0 || y < 0 || x >= gridCopy[0].length || y >= gridCopy.length) {
+        continue;
+      }
+      if (gridCopy[y][x] === '.') {
+        gridCopy[y][x] = 'O';
+        pointsToExplore.push({ x: x - 1, y });
+        pointsToExplore.push({ x: x + 1, y });
+        pointsToExplore.push({ x, y: y - 1 });
+        pointsToExplore.push({ x, y: y + 1 });
+      }
+    }
+  }
+  return gridCopy;
+};
+
 function part2(_input: string[]) {
-  return 'part2';
+  const oldMap = _input.map((line) => line.split(''));
+  const increasedResolutionMap = increaseResolutionOfMap(oldMap);
+
+  const { visited, map } = findLengthOfLoop(increasedResolutionMap);
+
+  const simplifiedMap = simplifyMap(map, [...visited]);
+
+  const floodedMap = floodFill(simplifiedMap);
+
+  const unfilledCountTripRes = floodedMap.reduce(
+    (acc, curr, y) =>
+      acc +
+      curr.reduce(
+        (acc, rowCurr, x) =>
+          rowCurr === '.' && y % 3 === 1 && x % 3 === 1 ? acc + 1 : acc,
+        0,
+      ),
+    0,
+  );
+
+  return unfilledCountTripRes;
 }
 
-solve({ part1, part2, parser: parseLines(), test1: 8 });
+solve({ part1, part2, parser: parseLines(), test2: 10 });
